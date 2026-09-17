@@ -1,0 +1,10 @@
+version: 2
+
+seeds:
+  - name: region_country_map
+    description: Static country-to-region mapping, loaded via `dbt seed`. Used to enrich dim_customers.
+    columns:
+      - name: country
+        tests: [unique, not_null]
+      - name: region
+        tests: [not_null]

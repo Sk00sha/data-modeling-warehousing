@@ -1,0 +1,12 @@
+warehouse:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('POSTGRES_HOST', 'postgres') }}"
+      user: "{{ env_var('POSTGRES_USER', 'warehouse') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD', 'warehouse') }}"
+      port: "{{ env_var('POSTGRES_PORT', '5432') | as_number }}"
+      dbname: "{{ env_var('POSTGRES_DB', 'warehouse') }}"
+      schema: dbt
+      threads: 4

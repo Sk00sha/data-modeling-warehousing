@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: ecommerce
+    schema: source
+    description: >
+      Simulated OLTP system for a small e-commerce business. This is the
+      "raw landing zone" the warehouse is built from — treat it as
+      read-only.
+    tables:
+      - name: customers
+      - name: products
+      - name: employees
+      - name: orders
+      - name: order_items
+      - name: payments
+      - name: customer_address_history

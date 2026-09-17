@@ -1,0 +1,73 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: >
+      Type-2 SCD customer dimension, built from the `customers_snapshot`
+      dbt snapshot. One row per customer per attribute version.
+    columns:
+      - name: customer_key
+        description: Surrogate key (md5 of customer_id + valid_from). Primary key of this table.
+        tests: [unique, not_null]
+      - name: customer_id
+        description: Natural key from the source system. Not unique here — repeats once per version.
+        tests: [not_null]
+
+  - name: dim_products
+    description: Type-1 (current-state only) product dimension.
+    columns:
+      - name: product_key
+        tests: [unique, not_null]
+      - name: product_id
+        tests: [unique, not_null]
+
+  - name: dim_employees
+    description: Employee dimension.
+    columns:
+      - name: employee_key
+        tests: [unique, not_null]
+      - name: employee_id
+        tests: [unique, not_null]
+
+  - name: dim_date
+    description: Standard calendar date dimension, one row per day.
+    columns:
+      - name: date_key
+        tests: [unique, not_null]
+      - name: date_day
+        tests: [unique, not_null]
+
+  - name: fact_orders
+    description: >
+      Transaction fact table. Grain: one row per order line item.
+      Additive measures: quantity, net_amount, cost_amount, margin_amount.
+      days_to_ship and amount_paid are order-level and repeat across an
+      order's line items — do not sum them without first deduplicating by
+      order_id.
+    columns:
+      - name: order_item_id
+        tests: [unique, not_null]
+      - name: order_date_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                  to: ref('dim_date')
+                  field: date_key
+      - name: customer_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                  to: ref('dim_customers')
+                  field: customer_key
+      - name: product_key
+        tests:
+          - relationships:
+              arguments:
+                  to: ref('dim_products')
+                  field: product_key
+      - name: net_amount
+        tests: [not_negative]
+      - name: quantity
+        tests: [not_negative]

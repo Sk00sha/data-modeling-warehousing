@@ -1,0 +1,95 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: One row per customer, cleaned and renamed from the source system.
+    columns:
+      - name: customer_id
+        tests: [unique, not_null]
+      - name: email
+        tests: [unique, not_null]
+      - name: segment
+        tests:
+          - accepted_values:
+              arguments:
+                  values: ['consumer', 'small_business', 'enterprise']
+
+  - name: stg_products
+    description: One row per product (current attributes only — SCD1).
+    columns:
+      - name: product_id
+        tests: [unique, not_null]
+      - name: sku
+        tests: [unique, not_null]
+      - name: unit_cost
+        tests: [not_negative]
+      - name: unit_price
+        tests: [not_negative]
+
+  - name: stg_employees
+    description: One row per employee.
+    columns:
+      - name: employee_id
+        tests: [unique, not_null]
+
+  - name: stg_orders
+    description: One row per order header.
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: customer_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                  to: ref('stg_customers')
+                  field: customer_id
+      - name: order_status
+        tests:
+          - accepted_values:
+              arguments:
+                  values: ['pending', 'shipped', 'delivered', 'cancelled', 'returned']
+      - name: channel
+        tests:
+          - accepted_values:
+              arguments:
+                  values: ['web', 'mobile', 'store', 'phone']
+
+  - name: stg_order_items
+    description: One row per order line item — this is the fact grain.
+    columns:
+      - name: order_item_id
+        tests: [unique, not_null]
+      - name: order_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                  to: ref('stg_orders')
+                  field: order_id
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                  to: ref('stg_products')
+                  field: product_id
+      - name: quantity
+        tests: [not_negative]
+      - name: net_amount
+        tests: [not_negative]
+
+  - name: stg_payments
+    description: One row per payment captured against an order.
+    columns:
+      - name: payment_id
+        tests: [unique, not_null]
+      - name: order_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                  to: ref('stg_orders')
+                  field: order_id
+      - name: amount
+        tests: [not_negative]
