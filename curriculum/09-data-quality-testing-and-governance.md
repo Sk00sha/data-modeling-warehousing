@@ -48,19 +48,17 @@ Defined declaratively in `.yml` files next to the models. Look at
 - name: stg_orders
   columns:
     - name: order_id
-      tests: [unique, not_null]
+      data_tests: [unique, not_null]
     - name: customer_id
-      tests:
+      data_tests:
         - not_null
         - relationships:
-            arguments:
-              to: ref('stg_customers')
-              field: customer_id
+            to: ref('stg_customers')
+            field: customer_id
     - name: order_status
-      tests:
+      data_tests:
         - accepted_values:
-            arguments:
-              values: ['pending', 'shipped', 'delivered', 'cancelled', 'returned']
+            values: ['pending', 'shipped', 'delivered', 'cancelled', 'returned']
 ```
 
 Four built-in tests cover most of what you need: `unique`, `not_null`,
